@@ -8,7 +8,10 @@ from pyvidplayer2 import VideoTkinter
 
 DISPLAY_RESOLUTION = 720  # p
 DEFAULT_CATEGORY = "No Category"
-DEFAULT_FRAMETIME_MS = int((1 / 30) * 1000)  # Currently videos hardcoded at 30fps
+DEFAULT_FRAMERATE = 30
+DEFAULT_FRAMETIME_MS = int(
+    (1 / DEFAULT_FRAMERATE) * 1000
+)  # Currently videos hardcoded at 30fps
 
 # Potential issues
 # Super large videos (OVER 2GB) may cause issues on 32-bit python if pyvidplayer2 doesn't use generators.
@@ -22,10 +25,18 @@ DEFAULT_FRAMETIME_MS = int((1 / 30) * 1000)  # Currently videos hardcoded at 30f
 
 class App(tk.Tk):
     def __init__(self, vidpath=""):
+
         super().__init__()
-        self.video = VideoTkinter(vidpath)
+        if not vidpath:
+            self.vidpath = None
+            while self.vidpath is None:
+                self.vidpath = self.select_vid()
+        else:
+            self.vidpath = vidpath
+
+        self.video = VideoTkinter(self.vidpath)
         self.video.change_resolution(DISPLAY_RESOLUTION)
-        self.vidpath = vidpath
+
         self.title("Clip Manager")
 
         video_tkframe = tk.Frame(self)
@@ -120,22 +131,29 @@ class App(tk.Tk):
             print("NO FILE SELECTED. FALLING BACK.")
             return
 
-        # Close old video stream
-        self.video.close()
+        # Close old video stream if it exists
+        first_pass = False
+        try:
+            self.video.close()
+        except AttributeError:
+            first_pass = True
 
-        # Reopen new one
-        self.video = VideoTkinter(filepath)
         self.vidpath = filepath
+        if not first_pass:
+            # Reopen new one
+            self.video = VideoTkinter(filepath)
 
-        # Refresh variables
-        self.seeker.configure(to=self.video.duration)
-        self.seeker.configure(
-            tickinterval=self.video.duration / 10,
-        )
-        self.selected_category.set(DEFAULT_CATEGORY)
-        self.start_timestamp, self.end_timestamp = 0, 0
-        self.video.change_resolution(DISPLAY_RESOLUTION)
-        # TODO: change tk canvas size
+            # Refresh variables
+            self.seeker.configure(to=self.video.duration)
+            self.seeker.configure(
+                tickinterval=self.video.duration / 10,
+            )
+            self.selected_category.set(DEFAULT_CATEGORY)
+            self.start_timestamp, self.end_timestamp = 0, 0
+            self.video.change_resolution(DISPLAY_RESOLUTION)
+            # TODO: change tk canvas size
+
+        return filepath
 
     @staticmethod
     def seconds_to_ffmpeg_format(time: float) -> str:
@@ -215,6 +233,6 @@ class App(tk.Tk):
         self.after(DEFAULT_FRAMETIME_MS, self.update_video)
 
 
-app = App("selling_everything_scaled.mp4")
+app = App()
 app.mainloop()
 app.video.close()
