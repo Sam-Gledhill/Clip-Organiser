@@ -9,18 +9,14 @@ from pyvidplayer2 import VideoTkinter
 DISPLAY_RESOLUTION = 720  # p
 DEFAULT_CATEGORY = "No Category"
 DEFAULT_FRAMERATE = 30
-DEFAULT_FRAMETIME_MS = int(
-    (1 / DEFAULT_FRAMERATE) * 1000
-)  # Currently videos hardcoded at 30fps
+DEFAULT_FRAMETIME_MS = int((1 / DEFAULT_FRAMERATE) * 1000)
 
 # Potential issues
 # Super large videos (OVER 2GB) may cause issues on 32-bit python if pyvidplayer2 doesn't use generators.
-# Videos are hard-coded to play at 30fps. This needs to be extracted from the video.
 # Dynamically downscaling videos instead of relying on them to display reasonably at 720p required.
 #   * Also the current 720p 'downscaling' still renders the video at native resolution.
 # Add config to change desired values such as default video dir, and destination dir
 # Videos longer than 20s have not been tested. FFMPEG time format may bug out.
-# No option to not load up default file
 
 
 class App(tk.Tk):
@@ -52,6 +48,11 @@ class App(tk.Tk):
         self.canvas.pack()
         video_tkframe.pack()
 
+        self.place_buttons()
+
+        self.update_video()
+
+    def place_buttons(self):
         button_tkframe = tk.Frame(self)
 
         select_video_button = tk.Button(
@@ -118,8 +119,6 @@ class App(tk.Tk):
         self.seeker.pack(pady=5, side=tk.BOTTOM)
 
         seeker_tkframe.pack()
-
-        self.update_video()
 
     def update_video_frametime(self):
         self.video.probe()
