@@ -17,10 +17,11 @@ DEFAULT_FRAMETIME_MS = int((1 / 30) * 1000)  # Currently videos hardcoded at 30f
 #   * Also the current 720p 'downscaling' still renders the video at native resolution.
 # Add config to change desired values such as default video dir, and destination dir
 # Videos longer than 20s have not been tested. FFMPEG time format may bug out.
+# No option to not load up default file
 
 
 class App(tk.Tk):
-    def __init__(self, vidpath):
+    def __init__(self, vidpath=""):
         super().__init__()
         self.video = VideoTkinter(vidpath)
         self.video.change_resolution(DISPLAY_RESOLUTION)
