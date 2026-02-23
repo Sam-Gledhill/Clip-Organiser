@@ -37,6 +37,8 @@ class App(tk.Tk):
         self.video = VideoTkinter(self.vidpath)
         self.video.change_resolution(DISPLAY_RESOLUTION)
 
+        self.update_video_frametime()
+
         self.title("Clip Manager")
 
         video_tkframe = tk.Frame(self)
@@ -119,6 +121,14 @@ class App(tk.Tk):
 
         self.update_video()
 
+    def update_video_frametime(self):
+        self.video.probe()
+        avg_fr = self.video.get_metadata().get("avg_fr")
+        if avg_fr is not None:
+            self.frametime_ms = int((1 / avg_fr) * 1000)
+        else:
+            self.frametime_ms = DEFAULT_FRAMETIME_MS
+
     def select_vid(self):
 
         # opens dialog in same folder as python file
@@ -142,6 +152,8 @@ class App(tk.Tk):
         if not first_pass:
             # Reopen new one
             self.video = VideoTkinter(filepath)
+
+            self.update_video_frametime()
 
             # Refresh variables
             self.seeker.configure(to=self.video.duration)
@@ -233,7 +245,7 @@ class App(tk.Tk):
             self.video.restart()
 
         # TODO: get framerate from video file. 32ms ~= 30fps
-        self.after(DEFAULT_FRAMETIME_MS, self.update_video)
+        self.after(self.frametime_ms, self.update_video)
 
 
 app = App()
