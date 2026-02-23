@@ -186,7 +186,7 @@ class App(tk.Tk):
         else:
             cat_folder = self.selected_category.get()
 
-        assert self.vidpath != None, "Critical Error: Vidpath is still None."
+        assert self.vidpath is not None, "Critical Error: Vidpath is still None."
 
         output_prefix = os.path.join("categories", cat_folder)
         output_suffix = f"{os.path.basename(self.vidpath.split('.')[0])}-{self.start_timestamp:.0f}-{self.end_timestamp:.0f}.mp4"
@@ -219,6 +219,7 @@ class App(tk.Tk):
         self.video.seek(int(e), relative=False)
 
     def update_video(self):
+
         self.video.draw(
             self.canvas,
             (self.video.current_size[0] // 2, self.video.current_size[1] // 2),
