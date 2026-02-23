@@ -135,6 +135,7 @@ class App(tk.Tk):
         self.selected_category.set(DEFAULT_CATEGORY)
         self.start_timestamp, self.end_timestamp = 0, 0
         self.video.change_resolution(DISPLAY_RESOLUTION)
+        # TODO: change tk canvas size
 
     @staticmethod
     def seconds_to_ffmpeg_format(time: float) -> str:
