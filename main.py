@@ -1,20 +1,19 @@
-"""
-This is a quick example of integrating a video into a tkinter project
-"""
-
-# Sample videos can be found here: https://github.com/anrayliu/pyvidplayer2-test-resources/tree/main/resources
-
 import os
 import subprocess
 import tkinter as tk
+from tkinter import filedialog as fd
 
 from pyvidplayer2 import VideoTkinter
+
+DISPLAY_RESOLUTION = 720  # p
+DEFAULT_CATEGORY = "No Category"
 
 
 class App(tk.Tk):
     def __init__(self, vidpath):
         super().__init__()
         self.video = VideoTkinter(vidpath)
+        self.video.change_resolution(DISPLAY_RESOLUTION)
         self.vidpath = vidpath
         self.title("Clip Manager")
 
@@ -31,7 +30,9 @@ class App(tk.Tk):
 
         button_tkframe = tk.Frame(self)
 
-        select_video_button = tk.Button(button_tkframe, text="select_vid")
+        select_video_button = tk.Button(
+            button_tkframe, text="Select Vid", command=self.select_vid
+        )
         select_video_button.pack(side=tk.LEFT)
 
         pause_button = tk.Button(
@@ -52,11 +53,15 @@ class App(tk.Tk):
         )
         publish_button.pack(side=tk.LEFT, padx=20)
 
-        self.selected_category = tk.StringVar(value="No Category")
+        self.selected_category = tk.StringVar(value=DEFAULT_CATEGORY)
+
+        # lists only directories in folder "categories"
+        categories = next(os.walk("categories"))[1]
+
         category_button = tk.OptionMenu(
             button_tkframe,
             self.selected_category,
-            *os.listdir("categories"),
+            *categories,
             "Custom",
             command=self.check_custom_category,
         )
@@ -71,7 +76,7 @@ class App(tk.Tk):
 
         seeker_tkframe = tk.Frame(self)
         self.seekervar = tk.DoubleVar()
-        seeker = tk.Scale(
+        self.seeker = tk.Scale(
             seeker_tkframe,
             variable=self.seekervar,
             from_=0,
@@ -81,11 +86,35 @@ class App(tk.Tk):
             tickinterval=10,
             command=self.seek,
         )
-        seeker.pack(pady=5, side=tk.BOTTOM)
+        self.seeker.pack(pady=5, side=tk.BOTTOM)
 
         seeker_tkframe.pack()
 
         self.update_video()
+
+    def select_vid(self):
+
+        # opens dialog in same folder as python file
+        filepath = fd.askopenfilename(
+            title="Select Video...",
+            initialdir=__file__,
+        )
+
+        if len(filepath) == 0:
+            print("NO FILE SELECTED. FALLING BACK.")
+            return
+
+        # Close old video stream
+        self.video.close()
+
+        # Reopen new one
+        self.video = VideoTkinter(filepath)
+        self.vidpath = filepath
+
+        # Refresh variables
+        self.seeker.configure(to=self.video.duration)
+        self.selected_category.set(DEFAULT_CATEGORY)
+        self.start_timestamp, self.end_timestamp = 0, 0
 
     def check_custom_category(self, choice):
         if choice == "Custom":
@@ -103,10 +132,11 @@ class App(tk.Tk):
     def publish_clip(self):
         if self.end_timestamp <= self.start_timestamp:
             print("End before or equal to start timestamp, not publishing")
+            return
 
         print("Publishing...")
 
-        if self.selected_category.get() == "No Category":
+        if self.selected_category.get() == DEFAULT_CATEGORY:
             cat_folder = ""
         elif self.selected_category.get() == "Custom":
             cat_folder = self.custom_category.get()
