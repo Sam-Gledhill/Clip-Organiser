@@ -14,6 +14,9 @@ DEFAULT_FRAMETIME_MS = int((1 / 30) * 1000)  # Currently videos hardcoded at 30f
 # Super large videos (OVER 2GB) may cause issues on 32-bit python if pyvidplayer2 doesn't use generators.
 # Videos are hard-coded to play at 30fps. This needs to be extracted from the video.
 # Dynamically downscaling videos instead of relying on them to display reasonably at 720p required.
+#   * Also the current 720p 'downscaling' still renders the video at native resolution.
+# Add config to change desired values such as default video dir, and destination dir
+# Videos longer than 20s have not been tested. FFMPEG time format may bug out.
 
 
 class App(tk.Tk):
