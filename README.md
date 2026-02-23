@@ -2,4 +2,11 @@
 
 ffmpeg is required 
 
+[Arch Linux]
+`pacman -S ffmpeg`
+
+[MacOS]
+`brew install ffmpeg`
+
+
 pyvidplayer2 is required `pip install pyvidplayer2`
