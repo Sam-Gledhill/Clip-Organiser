@@ -115,6 +115,7 @@ class App(tk.Tk):
         self.seeker.configure(to=self.video.duration)
         self.selected_category.set(DEFAULT_CATEGORY)
         self.start_timestamp, self.end_timestamp = 0, 0
+        self.video.change_resolution(DISPLAY_RESOLUTION)
 
     def check_custom_category(self, choice):
         if choice == "Custom":
