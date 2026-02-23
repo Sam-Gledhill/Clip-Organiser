@@ -8,8 +8,9 @@
 
 [MacOS]
 `brew install ffmpeg`
+
 [Windows]
-Install from https://www.gyan.dev/ffmpeg/builds/, place on path.
+Install from [https://www.gyan.dev/ffmpeg/builds/](https://www.gyan.dev/ffmpeg/builds/) Ensure accessible on the [path](https://www.reddit.com/r/learnprogramming/comments/phz1ap/how_can_i_inspect_my_windows_10_path_variable/).
 
 ## Python Requirements
 pyvidplayer2  `pip install pyvidplayer2`
