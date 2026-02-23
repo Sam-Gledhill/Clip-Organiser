@@ -2,6 +2,7 @@ import datetime
 import os
 import subprocess
 import tkinter as tk
+from functools import partial
 from tkinter import filedialog as fd
 
 from pyvidplayer2 import VideoTkinter
@@ -10,13 +11,15 @@ DISPLAY_RESOLUTION = 720  # p
 DEFAULT_CATEGORY = "No Category"
 DEFAULT_FRAMERATE = 30
 DEFAULT_FRAMETIME_MS = int((1 / DEFAULT_FRAMERATE) * 1000)
+MOUSE_HOLD_DISABLED = True
 
-# Potential issues
+# Issues/TODO
 # Super large videos (OVER 2GB) may cause issues on 32-bit python if pyvidplayer2 doesn't use generators.
 # Dynamically downscaling videos instead of relying on them to display reasonably at 720p required.
 #   * Also the current 720p 'downscaling' still renders the video at native resolution.
 # Add config to change desired values such as default video dir, and destination dir
 # Videos longer than 20s have not been tested. FFMPEG time format may bug out.
+# Required: Poll ffmpeg subprocess and report back when finished. Add indicator to GUI.
 
 
 class App(tk.Tk):
@@ -48,9 +51,28 @@ class App(tk.Tk):
         self.canvas.pack()
         video_tkframe.pack()
 
+        self.lmb_held = False
+
+        # Really dodgy at the moment, but disables seeker when mouse button is pressed anywhere on the screen.
+        self.seeker_interacted_with = False
+        self.bind("<Button-1>", self.mouse_pressed)
+        self.bind("<ButtonRelease-1>", self.mouse_released)
+
         self.place_buttons()
 
         self.update_video()
+
+    def mouse_pressed(self, e):
+        if MOUSE_HOLD_DISABLED:
+            return
+        if e.y > self.seeker.coords()[1] - 50:
+            self.lmb_held = True
+
+    def mouse_released(self, _e):
+        if MOUSE_HOLD_DISABLED:
+            return
+        self.lmb_held = False
+        self.after(self.frametime_ms, partial(self.seek, self.seekervar.get()))
 
     def place_buttons(self):
         button_tkframe = tk.Frame(self)
@@ -227,6 +249,8 @@ class App(tk.Tk):
         return self.video.get_pos()
 
     def seek(self, e):
+        if self.lmb_held:
+            return
         self.video.seek(int(e), relative=False)
 
     def update_video(self):
@@ -236,8 +260,8 @@ class App(tk.Tk):
             (self.video.current_size[0] // 2, self.video.current_size[1] // 2),
             force_draw=False,
         )
-
-        self.seekervar.set(self.video.get_pos())
+        if not self.lmb_held:
+            self.seekervar.set(self.video.get_pos())
 
         # Designed for if video ends. Might trigger on something else?
         if not self.video.active:
