@@ -1,3 +1,4 @@
+import datetime
 import os
 import subprocess
 import tkinter as tk
@@ -7,6 +8,12 @@ from pyvidplayer2 import VideoTkinter
 
 DISPLAY_RESOLUTION = 720  # p
 DEFAULT_CATEGORY = "No Category"
+DEFAULT_FRAMETIME_MS = int((1 / 30) * 1000)  # Currently videos hardcoded at 30fps
+
+# Potential issues
+# Super large videos (OVER 2GB) may cause issues on 32-bit python if pyvidplayer2 doesn't use generators.
+# Videos are hard-coded to play at 30fps. This needs to be extracted from the video.
+# Dynamically downscaling videos instead of relying on them to display reasonably at 720p required.
 
 
 class App(tk.Tk):
@@ -56,11 +63,16 @@ class App(tk.Tk):
         self.selected_category = tk.StringVar(value=DEFAULT_CATEGORY)
 
         # lists only directories in folder "categories"
-        categories = next(os.walk("categories"))[1]
+        try:
+            categories = next(os.walk("categories"))[1]
+        except StopIteration:
+            categories = []
+            os.mkdir("categories")
 
         category_button = tk.OptionMenu(
             button_tkframe,
             self.selected_category,
+            DEFAULT_CATEGORY,
             *categories,
             "Custom",
             command=self.check_custom_category,
@@ -83,7 +95,7 @@ class App(tk.Tk):
             to=self.video.duration,
             orient=tk.HORIZONTAL,
             length=self.video.current_size[0] - 20,
-            tickinterval=10,
+            tickinterval=self.video.duration / 10,
             command=self.seek,
         )
         self.seeker.pack(pady=5, side=tk.BOTTOM)
@@ -113,9 +125,16 @@ class App(tk.Tk):
 
         # Refresh variables
         self.seeker.configure(to=self.video.duration)
+        self.seeker.configure(
+            tickinterval=self.video.duration / 10,
+        )
         self.selected_category.set(DEFAULT_CATEGORY)
         self.start_timestamp, self.end_timestamp = 0, 0
         self.video.change_resolution(DISPLAY_RESOLUTION)
+
+    @staticmethod
+    def seconds_to_ffmpeg_format(time: float) -> str:
+        return str(datetime.timedelta(seconds=time))
 
     def check_custom_category(self, choice):
         if choice == "Custom":
@@ -159,9 +178,9 @@ class App(tk.Tk):
                 "-i",
                 f"{self.vidpath}",
                 "-ss",
-                f"00:00:{self.start_timestamp}",
+                f"{self.seconds_to_ffmpeg_format(self.start_timestamp)}",
                 "-t",
-                f"00:00:{self.end_timestamp - self.start_timestamp}",
+                f"{self.seconds_to_ffmpeg_format(self.end_timestamp)}",
                 output_path,
             ]
         )
@@ -188,7 +207,7 @@ class App(tk.Tk):
             self.video.restart()
 
         # TODO: get framerate from video file. 32ms ~= 30fps
-        self.after(32, self.update_video)
+        self.after(DEFAULT_FRAMETIME_MS, self.update_video)
 
 
 app = App("selling_everything_scaled.mp4")
