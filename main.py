@@ -186,6 +186,8 @@ class App(tk.Tk):
         else:
             cat_folder = self.selected_category.get()
 
+        assert self.vidpath != None, "Critical Error: Vidpath is still None."
+
         output_prefix = os.path.join("categories", cat_folder)
         output_suffix = f"{os.path.basename(self.vidpath.split('.')[0])}-{self.start_timestamp:.0f}-{self.end_timestamp:.0f}.mp4"
         output_path = os.path.join(os.getcwd(), output_prefix, output_suffix)
