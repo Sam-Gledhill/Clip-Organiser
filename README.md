@@ -13,5 +13,6 @@
 Install from [https://www.gyan.dev/ffmpeg/builds/](https://www.gyan.dev/ffmpeg/builds/) Ensure accessible on the [path](https://www.reddit.com/r/learnprogramming/comments/phz1ap/how_can_i_inspect_my_windows_10_path_variable/).
 
 ## Python Additional Requirements
-pyvidplayer2  `pip install pyvidplayer2`
-tkinter (should be installed by default. If not acquire from your package manager e.g. https://archlinux.org/packages/extra/x86_64/tk/)
+- pyvidplayer2  `pip install pyvidplayer2`
+
+- tkinter (should be installed by default. If not acquire from your package manager e.g. https://archlinux.org/packages/extra/x86_64/tk/)
